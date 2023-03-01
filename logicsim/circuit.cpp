@@ -11,10 +11,10 @@
 #include "circuit.h"
 #include "event.h"
 
+
+
 Circuit::Circuit() : m_current_time(0)
-{
-    
-}
+{}
 
 Circuit::~Circuit()
 {
@@ -30,14 +30,18 @@ Circuit::~Circuit()
 
 void Circuit::test()
 {
-    m_wires.push_back(new Wire(0, "input A"));
+  m_wires.push_back(new Wire(0, "input A"));
+	
 	m_wires.push_back(new Wire(1, "input B"));
+	
 	m_wires.push_back(new Wire(2, "output"));
     
     Gate* g = new And2Gate(m_wires[0], m_wires[1], m_wires[2]);
 	m_gates.push_back(g);
     
+	
 	Event* e = new Event {0,m_wires[0],'0'};
+	
 	m_pq.push(e);
 	
 	e = new Event {0,m_wires[1],'1'};
@@ -80,6 +84,7 @@ bool Circuit::parse(const char* fname)
         }
         if(line == "GATES")
         {
+					
             std::string t_line;
             getline(inFile,t_line);
             int n = stoi(t_line);
@@ -110,6 +115,16 @@ bool Circuit::parse(const char* fname)
                     m_gates.push_back(new Or2Gate(m_wires[stoi(s_in1)], m_wires[stoi(s_in2)], m_wires[stoi(s_output)]));
                 }
                 //Add code here to support the NOT gate type
+								if(s_type == "NOT")
+								{
+									
+										std::string s_in1;
+                    getline(ss, s_in1, ',');
+                    
+                    std::string s_output;
+                    getline(ss, s_output, ',');
+										m_gates.push_back(new NotGate(m_wires[stoi(s_in1)], m_wires[stoi(s_output)]));
+								}
             }
         }
         if(line == "INJECT")
@@ -122,7 +137,8 @@ bool Circuit::parse(const char* fname)
                 getline(inFile,t_line);
                 std::stringstream ss(t_line);
                 std::string s_time;
-                getline(ss, s_time, ',');
+                
+								getline(ss, s_time, ',');
                 std::string s_wire;
                 getline(ss, s_wire, ',');
                 std::string s_state;
@@ -132,7 +148,9 @@ bool Circuit::parse(const char* fname)
             	m_pq.push(e);
             }
         }
-    }
+				
+				}
+    
     return true;
 }
 
@@ -144,7 +162,8 @@ bool Circuit::advance(std::ostream& os)
 	}
     
     m_current_time = m_pq.top()->time;
-    std::stringstream ss;
+    
+		std::stringstream ss;
     ss << "@" << m_current_time << std::endl;
     bool updated = false;
     
@@ -185,6 +204,7 @@ bool Circuit::advance(std::ostream& os)
 
 void Circuit::run(std::ostream& os)
 {
+	
 	
 	while(advance(os)){
         
